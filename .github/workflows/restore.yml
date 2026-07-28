@@ -1,0 +1,32 @@
+name: Database Restore & Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_file:
+        description: 'Specific backup file to restore (leave blank for latest)'
+        required: false
+        default: ''
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run restore
+        run: ./scripts/restore.sh "${{ github.event.inputs.backup_file }}"
+
+      - name: Run verification
+        run: ./scripts/verify.sh
+
+      - name: Clean up restore container
+        if: always()
+        run: docker rm -f pg-restore-test || true
