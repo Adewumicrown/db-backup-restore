@@ -1,0 +1,35 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # daily at 03:00 UTC
+  workflow_dispatch:       # allows manual trigger from GitHub UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Start Postgres container
+        run: docker compose up -d
+
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..10}; do
+            docker exec pg-db pg_isready -U appuser && break
+            sleep 3
+          done
+
+      - name: Seed database (only for demo purposes)
+        run: ./scripts/seed.sh
+
+      - name: Run backup
+        run: ./scripts/backup.sh
