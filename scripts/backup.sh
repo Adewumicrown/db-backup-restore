@@ -40,5 +40,5 @@ aws s3 cp "$MANIFEST_FILE" "s3://$BUCKET/$MANIFEST_FILE"
 
 # Clean up local files
 rm "$BACKUP_FILE" "$MANIFEST_FILE"
-
+echo "last_backup_timestamp $(date +%s)" | curl --data-binary @- http://localhost:9091/metrics/job/db_backup
 echo "Backup complete: $BACKUP_FILE"
