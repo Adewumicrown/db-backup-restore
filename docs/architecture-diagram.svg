@@ -1,0 +1,92 @@
+<svg width="720" height="640" viewBox="0 0 720 640" xmlns="http://www.w3.org/2000/svg">
+<style>
+  .box { fill: #ffffff; stroke: #333333; stroke-width: 1.5; rx: 8; }
+  .box-db { fill: #dbeafe; stroke: #2563eb; }
+  .box-ci { fill: #f3f4f6; stroke: #4b5563; }
+  .box-script { fill: #d1fae5; stroke: #059669; }
+  .box-restore { fill: #fee2e2; stroke: #dc2626; }
+  .box-mon { fill: #ede9fe; stroke: #7c3aed; }
+  .title { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; fill: #111827; }
+  .sub { font-family: Arial, sans-serif; font-size: 11px; fill: #374151; }
+  .lbl { font-family: Arial, sans-serif; font-size: 10px; fill: #6b7280; font-style: italic; }
+  .arrow { stroke: #6b7280; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  .dashed { stroke-dasharray: 4 3; }
+</style>
+
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
+    <polygon points="0 0, 8 3.5, 0 7" fill="#6b7280"/>
+  </marker>
+</defs>
+
+<text x="360" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#111827">Automated DB Backup &amp; Restore — Architecture</text>
+
+<!-- Postgres DB -->
+<rect x="30" y="60" width="180" height="60" class="box box-db" rx="8"/>
+<text x="120" y="85" text-anchor="middle" class="title">Postgres DB</text>
+<text x="120" y="103" text-anchor="middle" class="sub">Docker container + volume</text>
+
+<!-- GitHub Actions -->
+<rect x="270" y="60" width="180" height="60" class="box box-ci" rx="8"/>
+<text x="360" y="85" text-anchor="middle" class="title">GitHub Actions</text>
+<text x="360" y="103" text-anchor="middle" class="sub">Scheduled cron + manual trigger</text>
+
+<line x1="210" y1="90" x2="268" y2="90" class="arrow"/>
+
+<!-- backup.sh -->
+<rect x="510" y="60" width="180" height="60" class="box box-script" rx="8"/>
+<text x="600" y="85" text-anchor="middle" class="title">backup.sh</text>
+<text x="600" y="103" text-anchor="middle" class="sub">pg_dump + compress + manifest</text>
+
+<line x1="450" y1="90" x2="508" y2="90" class="arrow"/>
+
+<!-- S3 -->
+<rect x="510" y="160" width="180" height="60" class="box box-script" rx="8"/>
+<text x="600" y="185" text-anchor="middle" class="title">Amazon S3</text>
+<text x="600" y="203" text-anchor="middle" class="sub">Backup + manifest storage</text>
+
+<line x1="600" y1="120" x2="600" y2="158" class="arrow"/>
+<text x="608" y="145" class="lbl">upload dump + manifest</text>
+
+<!-- restore.sh -->
+<rect x="510" y="260" width="180" height="60" class="box box-restore" rx="8"/>
+<text x="600" y="285" text-anchor="middle" class="title">restore.sh</text>
+<text x="600" y="303" text-anchor="middle" class="sub">Fetch + decompress backup</text>
+
+<line x1="600" y1="220" x2="600" y2="258" class="arrow"/>
+
+<!-- Fresh DB -->
+<rect x="510" y="360" width="180" height="60" class="box box-restore" rx="8"/>
+<text x="600" y="385" text-anchor="middle" class="title">Fresh DB Instance</text>
+<text x="600" y="403" text-anchor="middle" class="sub">Throwaway container</text>
+
+<line x1="600" y1="320" x2="600" y2="358" class="arrow"/>
+
+<!-- verify.sh -->
+<rect x="510" y="460" width="180" height="60" class="box box-restore" rx="8"/>
+<text x="600" y="485" text-anchor="middle" class="title">verify.sh</text>
+<text x="600" y="503" text-anchor="middle" class="sub">Compare row count vs manifest</text>
+
+<line x1="600" y1="420" x2="600" y2="458" class="arrow"/>
+
+<!-- Prometheus -->
+<rect x="30" y="460" width="180" height="60" class="box box-mon" rx="8"/>
+<text x="120" y="485" text-anchor="middle" class="title">Prometheus</text>
+<text x="120" y="503" text-anchor="middle" class="sub">Scrapes postgres_exporter + Pushgateway</text>
+
+<!-- Grafana -->
+<rect x="30" y="560" width="180" height="60" class="box box-mon" rx="8"/>
+<text x="120" y="585" text-anchor="middle" class="title">Grafana</text>
+<text x="120" y="603" text-anchor="middle" class="sub">Dashboard: DB health + backup freshness</text>
+
+<line x1="120" y1="520" x2="120" y2="558" class="arrow"/>
+
+<!-- DB to Prometheus (dashed, metrics) -->
+<line x1="120" y1="120" x2="120" y2="458" class="arrow dashed"/>
+<text x="128" y="290" class="lbl">exports DB health metrics</text>
+
+<!-- backup.sh to Prometheus (dashed, pushgateway) -->
+<path d="M 510 90 L 260 90 L 260 490 L 208 490" class="arrow dashed" fill="none"/>
+<text x="270" y="483" class="lbl">pushes last_backup_timestamp (Pushgateway)</text>
+
+</svg>
